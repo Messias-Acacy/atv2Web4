@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@gluestack-ui/input": "^0.1.38"
+  }
+}
