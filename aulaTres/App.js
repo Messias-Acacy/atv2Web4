@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { Input, Button, Avatar } from 'react-native-elements';
@@ -8,7 +8,11 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ListItem } from 'react-native-elements';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { useNavigation } from '@react-navigation/native'; // Importando o hook useNavigation
+import { useNavigation } from '@react-navigation/native';
+import axios from 'axios';
+import {Alert } from 'react-native';
+import { useEffect } from 'react';
+
 
 function HeaderRight() {
   const navigation = useNavigation(); // Acesso ao hook useNavigation
@@ -44,6 +48,36 @@ function HeaderLeftContato() {
 
 
 function Login({ navigation }) {
+  const [email,setEmail] = useState('')
+  const [senha,setSenha] = useState('')
+  
+  let enviar = () => {
+    axios.get('http://localhost:3000/usuarios')
+    .then(response => {
+  
+      const usuarios = response.data;
+
+      
+   
+      usuarios.forEach(usuario => {
+        if(usuario.email == email && usuario.senha == senha){
+          console.log(usuario.email)
+          navigation.navigate('ListaContatos')
+        }
+        console.log(usuario.email)
+      });
+      
+    })
+    .catch(error => {
+      console.error("Erro ao buscar usuários:", error);
+      console.log("Cadastro não encontrado!")
+    });
+
+
+  }
+ 
+
+  
   return (
     <View style={{ width: "100%", height: "100%", flex: 1, alignItems: "center", justifyContent: "center" }}>
    
@@ -57,17 +91,20 @@ function Login({ navigation }) {
 
         <View style={{ width: "95%" }}>
           <Input inputStyle={{ backgroundColor: "#D3D3D3", width: "100%", margin: 0, padding: 0, borderWidth: 0 }}
-            label="Email"
+            label="email"  
+            value={email}
+            onChangeText={setEmail}
           />
 
           <Input inputStyle={{ backgroundColor: "#D3D3D3" }}
-            label="Senha"
+            label="senha" value={senha}
+            onChangeText={setSenha}
           />
         </View>
 
         <View style={{ width: "95%" }}>
           <Button buttonStyle={{ backgroundColor: "green", width: "100%" }} style={{ marginBottom: "10px" }}
-            title="Logar" onPress={() => navigation.navigate('ListaContatos')} 
+            title="Logar" onPress={enviar} 
           />
 
           <Button buttonStyle={{ backgroundColor: "green" }}
@@ -87,39 +124,35 @@ const css = StyleSheet.create({
   }
 });
 
-const list = [
-  {
-    name: 'Amy Farha',
-    avatar_url: 'https://s3.amazonaws.com/uifaces/faces/twitter/ladylexy/128.jpg',
-    email:"falso@naoexiste.com",
-    number: '98765432'
-  },
-  {
-    name: 'Chris Jackson',
-    avatar_url: 'https://s3.amazonaws.com/uifaces/faces/twitter/adhamdannaway/128.jpg',
-    email:"falso2@naoexiste.com",
-    number: '12345678'
-  },
-  {
-    name: 'Messias',
-    avatar_url: 'https://s3.amazonaws.com/uifaces/faces/twitter/adhamdannaway/128.jpg',
-    email:"falso3@naoexiste.com",
-    number: '40024002'
-  },
-];
+
 
 function ListaContatos({navigation}) {
+  const [list, setList] = useState([]);
+  
+  useEffect(() => {
+    
+    const fetchContatos = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/contatos');
+        setList(response.data); // Atualiza o estado 
+      } catch (error) {
+        console.error("Erro ao buscar os contatos:", error);
+      }
+    };
+
+    fetchContatos(); 
+  }, []);
 
   return (
     <View style={{ width: "100%", height: "100%", flex: 1, alignItems: "center", justifyContent: "center" }}>
       <ScrollView style={{ width: "100%" }}>
         {list.map((l, i) => (
           <ListItem key={i} bottomDivider  
-          onPress={()=>navigation.navigate('AlterarContato',{name:l.name,email:l.email,telefone:l.number})} >
-            <Avatar source={{ uri: l.avatar_url }} />
+          onPress={()=>navigation.navigate('AlterarContato',{id:l.id,name:l.nome,email:l.email,telefone:l.telefone})} >
+            <Avatar source={{ uri:"https://s3.amazonaws.com/uifaces/faces/twitter/adhamdannaway/128.jpg"}} />
             <ListItem.Content>
-              <ListItem.Title>{l.name}</ListItem.Title>
-              <ListItem.Subtitle>{l.number}</ListItem.Subtitle>
+              <ListItem.Title>{l.nome}</ListItem.Title>
+              <ListItem.Subtitle>{l.telefone}</ListItem.Subtitle>
             </ListItem.Content>
           </ListItem>
         ))}
@@ -128,19 +161,63 @@ function ListaContatos({navigation}) {
   );
 }
 
-function Usuario() {
+
+function Usuario({ navigation }) {
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [senha, setSenha] = useState('');
+
+  const enviarUsuario = () => {
+    axios.post("http://localhost:3000/usuarios", {
+      nome, email, cpf, senha
+    })
+    .then((response) => {
+      Alert.alert("Sucesso", "Dados salvos com sucesso!");
+      navigation.goBack();
+    })
+    .catch((error) => {
+      Alert.alert("ERRO", "Ocorreu um erro ao salvar");
+      console.error(error);
+    });
+  };
+
   return (
     <View style={{ width: "100%", height: "100%", flex: 1, alignItems: "center", justifyContent: "center" }}>
-      
-
-        <View style={{ width: "95%" }}>
-          <Input inputStyle={{ backgroundColor: "#D3D3D3" }} label="Nome" />
-          <Input inputStyle={{ backgroundColor: "#D3D3D3" }} label="Email" />
-          <Input inputStyle={{ backgroundColor: "#D3D3D3" }} label="Cpf" />
-          <Input inputStyle={{ backgroundColor: "#D3D3D3" }} label="Senha" />
-          <Button buttonStyle={{ backgroundColor: "green", width: "100%" }} title="Salvar" />
-        </View>
-    
+      <View style={{ width: "95%" }}>
+        <Input 
+          inputStyle={{ backgroundColor: "#D3D3D3" }} 
+          label="Nome"
+          value={nome}
+          onChangeText={setNome}
+        />
+        <Input 
+          inputStyle={{ backgroundColor: "#D3D3D3" }} 
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+        />
+        <Input 
+          inputStyle={{ backgroundColor: "#D3D3D3" }} 
+          label="Cpf"
+          value={cpf}
+          onChangeText={setCpf}
+          keyboardType="numeric"
+        />
+        <Input 
+          inputStyle={{ backgroundColor: "#D3D3D3" }} 
+          label="Senha"
+          value={senha}
+          onChangeText={setSenha}
+          secureTextEntry={true}
+        />
+        <Button 
+          buttonStyle={{ backgroundColor: "green", width: "100%" }} 
+          title="Salvar" 
+          onPress={enviarUsuario}
+        />
+      </View>
     </View>
   );
 }
@@ -148,36 +225,91 @@ function Usuario() {
 
 
 
-function Contato() {
+function Contato({navigation}) {
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [telefone, setTelefone] = useState('');
+  
+  const enviarContato = () => {
+    axios.post("http://localhost:3000/contatos", {
+      nome, email, telefone
+    })
+    .then((response) => {
+      Alert.alert("Sucesso", "Dados salvos com sucesso!");
+      navigation.navigate('ListaContatos');
+    })
+    .catch((error) => {
+      Alert.alert("ERRO", "Ocorreu um erro ao salvar");
+      console.error(error);
+    });
+  };
+
   return (
     <View style={{ width: "100%", height: "100%", flex: 1, alignItems: "center", justifyContent: "center" }}>
     
 
       <View style={{ width: "95%", height: "75%", backgroundColor: "white", alignItems: "center", justifyContent: "center" }}>
         <View style={{ width: "100%" }}>
-          <Input inputStyle={{ backgroundColor: "#D3D3D3" }} label="Nome" />
-          <Input inputStyle={{ backgroundColor: "#D3D3D3" }} label="Email" />
-          <Input inputStyle={{ backgroundColor: "#D3D3D3" }} label="Telefone" />
-          <Button buttonStyle={{ backgroundColor: "green", width: "100%" }} title="Salvar" />
+          <Input inputStyle={{ backgroundColor: "#D3D3D3" }} label="Nome"  value={nome}
+          onChangeText={setNome} />
+          <Input inputStyle={{ backgroundColor: "#D3D3D3" }} label="Email" value={email}
+          onChangeText={setEmail} />
+          <Input inputStyle={{ backgroundColor: "#D3D3D3" }} label="Telefone" value={telefone}
+          onChangeText={setTelefone} />
+          <Button buttonStyle={{ backgroundColor: "green", width: "100%" }} title="Salvar" onPress={enviarContato} />
         </View>
       </View>
     </View>
   );
 }
 
-function AlterarContato({route}) {
-  const {name,email,telefone} = route.params
+function AlterarContato({route,navigation}) {
+  
+  const [nome, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [telefone, setTelefone] = useState('');
+  const { id } = route.params;
+
+  useEffect(() => {
+    setName(route.params.name);
+    setEmail(route.params.email);
+    setTelefone(route.params.telefone);
+  }, []);
+
+
+  const putContatos = () =>{
+    axios.put(`http://localhost:3000/contatos/${id}`,
+      {id,nome,email,telefone}).then((response)=>{
+      console.log("dados alterados com sucesso!")
+      navigation.navigate('ListaContatos');
+    }).catch((error)=>{
+      console.log("erro!")
+    }
+  )
+  }
+
+
+  const deleteContatos = () =>{
+    axios.delete(`http://localhost:3000/contatos/${id}`)
+     .then((response)=>{
+      console.log("dados Excluidos")
+      navigation.navigate('ListaContatos');
+    }).catch((error)=>{
+      console.log("erro!")
+    }
+  )
+  }
   return (
   
     
 
       <View style={{ width: "100%", height: "75%", backgroundColor: "white", alignItems: "center", justifyContent: "center" }}>
         <View style={{ width: "95%" }}>
-          <Input value={name} inputStyle={{ backgroundColor: "#D3D3D3" }} label="Nome" />
-          <Input value={email} inputStyle={{ backgroundColor: "#D3D3D3" }} label="Email" />
-          <Input  value={telefone} inputStyle={{ backgroundColor: "#D3D3D3" }} label="Telefone" />
-          <Button buttonStyle={{ backgroundColor: "green", width: "100%" }} title="Alterar"  style={{marginBottom:"2%"}}/>
-          <Button buttonStyle={{ backgroundColor: "green", width: "100%" }} title="Excluir" />
+          <Input  value={nome} onChangeText={setName}  inputStyle={{ backgroundColor: "#D3D3D3" }} label="Nome" />
+          <Input value={email} onChangeText={setEmail} inputStyle={{ backgroundColor: "#D3D3D3" }} label="Email" />
+          <Input  value={telefone} onChangeText={setTelefone} inputStyle={{ backgroundColor: "#D3D3D3" }} label="Telefone" />
+          <Button buttonStyle={{ backgroundColor: "green", width: "100%" }} title="Alterar"  style={{marginBottom:"2%"}} onPress={putContatos}/>
+          <Button buttonStyle={{ backgroundColor: "green", width: "100%" }} onPress={deleteContatos} title="Excluir" />
         </View>
    
     </View>

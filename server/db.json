@@ -1,0 +1,43 @@
+{
+  "usuarios": [
+    {
+      "id": "8467",
+      "nome": "Messias Acacy",
+      "email": "messias@test.com",
+      "cpf": "1234566789",
+      "senha": "123"
+    }
+  ],
+  "contatos": [
+    {
+      "id": "1372",
+      "nome": "Nilson",
+      "email": "professor@teste.com",
+      "telefone": "1234556"
+    },
+    {
+      "id": "03b9",
+      "nome": "Alisson",
+      "email": "alisson@test.com",
+      "telefone": "444444444"
+    },
+    {
+      "id": "dfde",
+      "nome": "Mexias",
+      "email": "mexias@teste.com",
+      "telefone": "400240021"
+    },
+    {
+      "id": "16a1",
+      "nome": "amigo",
+      "email": "amigo@test.com",
+      "telefone": "55555555"
+    },
+    {
+      "id": "5f0e",
+      "nome": "teste2",
+      "email": "test2@test2.com",
+      "telefone": "989898989"
+    }
+  ]
+}
